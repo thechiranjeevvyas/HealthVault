@@ -1,0 +1,98 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model VaultSettings {
+  id           String   @id @default(uuid())
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model FamilyMember {
+  id                String   @id @default(uuid())
+  name              String
+  dob               DateTime
+  gender            String   // Enum Gender
+  bloodGroup        String?  // Enum BloodGroup
+  allergies         String?
+  chronicConditions String?
+  emergencyContact  String?
+  insuranceDetails  String?
+  notes             String?
+  avatarColor       String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  events            MedicalEvent[]
+  documents         Document[]
+}
+
+model MedicalEvent {
+  id        String   @id @default(uuid())
+  memberId  String
+  type      String   // Enum MedicalEventType
+  title     String
+  date      DateTime
+  doctor    String?
+  hospital  String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  member    FamilyMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  documents Document[]
+  tags      EventTag[]
+}
+
+model Document {
+  id         String   @id @default(uuid())
+  eventId    String?
+  memberId   String
+  fileName   String
+  filePath   String
+  fileType   String   // Enum FileType
+  fileSize   Int
+  ocrText    String?
+  uploadedAt DateTime @default(now())
+
+  event      MedicalEvent? @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  member     FamilyMember  @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  tags       DocumentTag[]
+}
+
+model Tag {
+  id    String @id @default(uuid())
+  name  String @unique
+  color String
+
+  events    EventTag[]
+  documents DocumentTag[]
+}
+
+model EventTag {
+  eventId String
+  tagId   String
+  event   MedicalEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tag     Tag          @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([eventId, tagId])
+}
+
+model DocumentTag {
+  documentId String
+  tagId      String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  tag        Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([documentId, tagId])
+}
+
+// NOTE: SQLite FTS5 should be enabled via a raw migration.
