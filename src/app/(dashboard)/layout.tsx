@@ -1,45 +1,32 @@
-import Link from "next/link";
-import { lockVault } from "@/actions/auth.actions";
-import { Lock } from "lucide-react";
+"use client";
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+import { usePathname } from "next/navigation";
+import Sidebar from "@/components/layout/Sidebar";
+import Header from "@/components/layout/Header";
+
+const ROUTE_MAP: Record<string, string> = {
+  "/": "Dashboard",
+  "/members": "Family Members",
+  "/timeline": "Timeline",
+  "/documents": "Documents",
+  "/search": "Search",
+  "/backup": "Backup & Restore",
+  "/settings": "Settings",
+};
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const title = ROUTE_MAP[pathname] || "Dashboard";
+
   return (
-    <div className="flex min-h-screen">
-      {/* Sidebar */}
-      <aside className="w-64 border-r bg-muted/30 flex flex-col p-4">
-        <div className="font-bold text-xl mb-8">HealthVault</div>
-        <nav className="flex flex-col gap-2 flex-1">
-          <Link href="/" className="hover:underline">Dashboard</Link>
-          <Link href="/members" className="hover:underline">Members</Link>
-          <Link href="/timeline" className="hover:underline">Timeline</Link>
-          <Link href="/documents" className="hover:underline">Documents</Link>
-          <Link href="/search" className="hover:underline">Search</Link>
-          <Link href="/backup" className="hover:underline">Backup</Link>
-          <Link href="/settings" className="hover:underline">Settings</Link>
-        </nav>
-        
-        {/* Footer */}
-        <div className="pt-4 border-t mt-auto">
-          <form action={lockVault}>
-            <button 
-              type="submit" 
-              className="flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors w-full text-left"
-            >
-              <Lock className="w-4 h-4" />
-              Lock Vault
-            </button>
-          </form>
-        </div>
-      </aside>
-
-      {/* Main Content Area */}
-      <main className="flex-1 p-6">
-        {children}
-      </main>
+    <div className="flex h-screen overflow-hidden bg-vault-bg">
+      <Sidebar />
+      <div className="flex-1 flex flex-col ml-[240px]">
+        <Header title={title} />
+        <main className="flex-1 overflow-y-auto p-6">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
