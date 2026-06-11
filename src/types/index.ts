@@ -1,56 +1,30 @@
-import type { 
-  VaultSettings, 
-  FamilyMember, 
-  MedicalEvent, 
-  Document, 
-  Tag, 
-  EventTag, 
-  DocumentTag 
-} from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
-export enum MedicalEventType {
-  CHECKUP = "CHECKUP",
-  LAB_TEST = "LAB_TEST",
-  VACCINATION = "VACCINATION",
-  PRESCRIPTION = "PRESCRIPTION",
-  SURGERY = "SURGERY",
-  DENTAL = "DENTAL",
-  EYE_CARE = "EYE_CARE",
-  EMERGENCY_VISIT = "EMERGENCY_VISIT",
-  OTHER = "OTHER"
-}
+export type MemberWithStats = Prisma.FamilyMemberGetPayload<{
+  include: {
+    _count: {
+      select: { events: true; documents: true };
+    };
+    events: {
+      orderBy: { date: 'desc' };
+      take: 1;
+      select: { date: true };
+    };
+  };
+}>;
 
-export enum FileType {
-  PDF = "PDF",
-  JPG = "JPG",
-  PNG = "PNG",
-  WEBP = "WEBP",
-  DOCX = "DOCX"
-}
+export type MemberDetail = Prisma.FamilyMemberGetPayload<{
+  include: {
+    events: {
+      orderBy: { date: 'desc' };
+    };
+    documents: true;
+    _count: {
+      select: { events: true; documents: true };
+    };
+  };
+}>;
 
-export enum Gender {
-  MALE = "MALE",
-  FEMALE = "FEMALE",
-  OTHER = "OTHER"
-}
-
-export enum BloodGroup {
-  A_POS = "A_POS",
-  A_NEG = "A_NEG",
-  B_POS = "B_POS",
-  B_NEG = "B_NEG",
-  AB_POS = "AB_POS",
-  AB_NEG = "AB_NEG",
-  O_POS = "O_POS",
-  O_NEG = "O_NEG"
-}
-
-export type {
-  VaultSettings,
-  FamilyMember,
-  MedicalEvent,
-  Document,
-  Tag,
-  EventTag,
-  DocumentTag
-};
+export type ActionResult<T> = 
+  | { success: true; data: T }
+  | { success: false; error: string };
