@@ -8,7 +8,7 @@ import EmptyState from "@/components/shared/EmptyState";
 import MemberForm from "./MemberForm";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 interface Props {
   members: MemberWithStats[];

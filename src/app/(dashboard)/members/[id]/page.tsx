@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { format, formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
 import { ArrowLeft } from "lucide-react";
 import { getMember } from "@/actions/member.actions";
 import MemberAvatar from "@/components/shared/MemberAvatar";
 import MemberDetailActions from "@/components/members/MemberDetailActions";
+import MemberEventsClient from "@/components/members/MemberEventsClient";
 
 function InfoRow({ label, value }: { label: string, value?: string | null }) {
   return (
@@ -76,45 +77,7 @@ export default async function MemberDetailPage({ params }: { params: Promise<{ i
         </div>
       </div>
 
-      <div className="bg-vault-surface border border-vault-border rounded-xl overflow-hidden">
-        <div className="flex items-center justify-between p-6 border-b border-vault-border">
-          <h2 className="text-lg font-semibold text-vault-text">Recent Events</h2>
-          <Link href={`/timeline?member=${member.id}`} className="text-sm text-vault-primary hover:underline">
-            View All
-          </Link>
-        </div>
-        <div className="p-0">
-          {member.events.length === 0 ? (
-            <div className="p-6 text-center text-vault-muted text-sm">
-              No medical events recorded
-            </div>
-          ) : (
-            <div className="divide-y divide-vault-border">
-              {member.events.slice(0, 5).map(event => (
-                <div key={event.id} className="p-4 px-6 flex items-center justify-between hover:bg-white/5 transition-colors">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border border-vault-border text-vault-muted">
-                        {event.type.replace("_", " ")}
-                      </span>
-                      <span className="font-medium text-vault-text">{event.title}</span>
-                    </div>
-                    <div className="text-sm text-vault-muted">
-                      {event.doctor || "No doctor specified"}
-                    </div>
-                  </div>
-                  <div className="text-xs text-vault-muted whitespace-nowrap text-right">
-                    {format(new Date(event.date), "MMM d, yyyy")}
-                    <div className="mt-1">
-                      {formatDistanceToNow(new Date(event.date), { addSuffix: true })}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+      <MemberEventsClient member={member} />
     </div>
   );
 }

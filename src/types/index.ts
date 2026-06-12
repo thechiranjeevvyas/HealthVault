@@ -28,3 +28,32 @@ export type MemberDetail = Prisma.FamilyMemberGetPayload<{
 export type ActionResult<T> = 
   | { success: true; data: T }
   | { success: false; error: string };
+
+export type EventWithMember = Prisma.MedicalEventGetPayload<{
+  include: {
+    member: {
+      select: { id: true; name: true; avatarColor: true }
+    }
+  }
+}>;
+
+export type EventDetail = Prisma.MedicalEventGetPayload<{
+  include: {
+    member: true;
+    documents: true;
+  }
+}>;
+
+export type CreateEventInput = Prisma.MedicalEventUncheckedCreateInput;
+export type UpdateEventInput = Prisma.MedicalEventUpdateInput;
+
+export interface EventFilters {
+  memberId?: string;
+  type?: string;
+  fromDate?: Date;
+  toDate?: Date;
+  search?: string;
+}
+
+export type EventsByYear = Record<number, EventWithMember[]>;
+

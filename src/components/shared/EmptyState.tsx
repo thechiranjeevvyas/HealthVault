@@ -7,7 +7,8 @@ interface EmptyStateProps {
   description: string;
   action?: {
     label: string;
-    href: string;
+    href?: string;
+    onClick?: () => void;
   };
 }
 
@@ -23,12 +24,21 @@ export default function EmptyState({ icon: Icon, title, description, action }: E
       </p>
       
       {action && (
-        <Link 
-          href={action.href}
-          className="bg-vault-primary hover:bg-vault-primary/90 text-white text-sm font-medium py-2 px-4 rounded-md transition-colors"
-        >
-          {action.label}
-        </Link>
+        action.href ? (
+          <Link 
+            href={action.href}
+            className="bg-vault-primary hover:bg-vault-primary/90 text-white text-sm font-medium py-2 px-4 rounded-md transition-colors"
+          >
+            {action.label}
+          </Link>
+        ) : (
+          <button
+            onClick={action.onClick}
+            className="bg-vault-primary hover:bg-vault-primary/90 text-white text-sm font-medium py-2 px-4 rounded-md transition-colors"
+          >
+            {action.label}
+          </button>
+        )
       )}
     </div>
   );
