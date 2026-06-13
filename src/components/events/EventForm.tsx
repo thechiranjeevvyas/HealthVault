@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createEventAction, updateEventAction } from "@/actions/event.actions";
-import { EventDetail, MemberWithStats } from "@/types";
+import { EventDetail, MemberWithStats, DocumentWithEvent } from "@/types";
 import { MedicalEventType } from "@/lib/validations/event.schema";
 import { EVENT_TYPE_OPTIONS } from "@/lib/event-config";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Loader2, Paperclip } from "lucide-react";
+import UploadZone from "@/components/documents/UploadZone";
+import DocumentCard from "@/components/documents/DocumentCard";
 
 interface Props {
   event?: EventDetail;
@@ -159,15 +161,34 @@ export default function EventForm({ event, defaultMemberId, members, onSuccess }
         <Textarea id="notes" name="notes" rows={4} placeholder="Any details, symptoms, or recommendations..." defaultValue={event?.notes || ""} disabled={isPending} />
       </div>
 
-      <div className="border border-dashed border-vault-border rounded-xl p-4 flex flex-col items-center justify-center text-center bg-vault-surface/50">
-        <div className="w-10 h-10 rounded-full bg-vault-bg flex items-center justify-center mb-2">
-          <Paperclip className="w-5 h-5 text-vault-muted" />
+      {event ? (
+        <div className="space-y-4 pt-2">
+          <Label>Attached Documents</Label>
+          <UploadZone 
+            memberId={selectedMember} 
+            eventId={event.id} 
+            compact={true} 
+            onUploadComplete={() => router.refresh()} 
+          />
+          {event.documents && event.documents.length > 0 ? (
+            <div className="grid grid-cols-1 gap-3 mt-4">
+              {event.documents.map(doc => (
+                <DocumentCard key={doc.id} document={doc as unknown as DocumentWithEvent} showEvent={false} onDelete={() => router.refresh()} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-vault-muted py-2 text-center border border-dashed border-vault-border rounded-lg bg-vault-surface/50">No documents attached.</p>
+          )}
         </div>
-        <p className="text-sm font-medium text-vault-text">Document upload coming soon</p>
-        <p className="text-xs text-vault-muted mt-1 max-w-xs">
-          You can attach lab reports, prescriptions, and scans after saving this event.
-        </p>
-      </div>
+      ) : (
+        <div className="bg-vault-surface/50 border border-vault-border rounded-xl p-4 flex items-start gap-3">
+          <div className="mt-0.5"><Paperclip className="w-5 h-5 text-vault-primary" /></div>
+          <div>
+            <p className="text-sm font-medium text-vault-text mb-0.5">💡 Save this event first</p>
+            <p className="text-xs text-vault-muted">You can attach lab reports, prescriptions, and scans from the event detail view after saving.</p>
+          </div>
+        </div>
+      )}
 
       <div className="flex gap-3 justify-end pt-4">
         <Button 

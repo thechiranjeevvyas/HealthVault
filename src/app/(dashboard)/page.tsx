@@ -4,6 +4,7 @@ import QuickActions from "@/components/dashboard/QuickActions";
 import RecentActivity from "@/components/dashboard/RecentActivity";
 import FamilyOverview from "@/components/dashboard/FamilyOverview";
 import { getDashboardStats, getRecentActivity, getFamilyOverview } from "@/actions/dashboard.actions";
+import { getFileSizeFormatted } from "@/lib/utils";
 
 export default async function DashboardPage() {
   const [stats, recentActivity, familyOverview] = await Promise.all([
@@ -45,6 +46,7 @@ export default async function DashboardPage() {
         <StatCard 
           title="Documents" 
           value={stats.totalDocuments} 
+          subtitle={getFileSizeFormatted(stats.totalStorageUsed)}
           icon={FileText} 
         />
         <StatCard 

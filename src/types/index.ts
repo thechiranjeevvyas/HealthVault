@@ -57,3 +57,21 @@ export interface EventFilters {
 
 export type EventsByYear = Record<number, EventWithMember[]>;
 
+export type DocumentWithEvent = Prisma.DocumentGetPayload<{
+  include: {
+    event: { select: { id: true; title: true; type: true; date: true } }
+    member: true;
+  }
+}>;
+
+export type DocumentWithMember = Prisma.DocumentGetPayload<{
+  include: { member: true }
+}>;
+
+export interface UploadDocumentInput {
+  file: File;
+  memberId: string;
+  eventId?: string;
+}
+
+

@@ -6,6 +6,8 @@ import { getMember } from "@/actions/member.actions";
 import MemberAvatar from "@/components/shared/MemberAvatar";
 import MemberDetailActions from "@/components/members/MemberDetailActions";
 import MemberEventsClient from "@/components/members/MemberEventsClient";
+import MemberDocumentsClient from "@/components/members/MemberDocumentsClient";
+import { getDocumentsByMember } from "@/services/document.service";
 
 function InfoRow({ label, value }: { label: string, value?: string | null }) {
   return (
@@ -18,7 +20,10 @@ function InfoRow({ label, value }: { label: string, value?: string | null }) {
 
 export default async function MemberDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const result = await getMember(id);
+  const [result, documents] = await Promise.all([
+    getMember(id),
+    getDocumentsByMember(id)
+  ]);
   
   if (!result.success || !result.data) {
     notFound();
@@ -78,6 +83,10 @@ export default async function MemberDetailPage({ params }: { params: Promise<{ i
       </div>
 
       <MemberEventsClient member={member} />
+      
+      <div className="pt-6 border-t border-vault-border mt-8">
+        <MemberDocumentsClient memberId={member.id} initialDocuments={documents} />
+      </div>
     </div>
   );
 }

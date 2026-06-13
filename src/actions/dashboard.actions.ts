@@ -5,7 +5,10 @@ import { db } from "@/lib/db";
 export async function getDashboardStats() {
   const totalMembers = await db.familyMember.count();
   const totalEvents = await db.medicalEvent.count();
-  const totalDocuments = await db.document.count();
+  const [totalDocuments, sizeResult] = await Promise.all([
+    db.document.count(),
+    db.document.aggregate({ _sum: { fileSize: true } })
+  ]);
   
   const startOfMonth = new Date();
   startOfMonth.setDate(1);
@@ -23,6 +26,7 @@ export async function getDashboardStats() {
     totalMembers,
     totalEvents,
     totalDocuments,
+    totalStorageUsed: sizeResult._sum.fileSize || 0,
     thisMonthEvents
   };
 }
