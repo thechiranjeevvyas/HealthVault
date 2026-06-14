@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { EventFilters, EventWithMember, EventDetail, EventsByYear } from "@/types";
 import { Prisma, MedicalEvent } from "@prisma/client";
+import { indexEvent, removeFromIndex } from "./search-index.service";
 
 export async function getAllEvents(filters?: EventFilters): Promise<EventWithMember[]> {
   const where: Prisma.MedicalEventWhereInput = {};
@@ -55,21 +56,26 @@ export async function getEventById(id: string): Promise<EventDetail | null> {
 }
 
 export async function createEvent(data: Prisma.MedicalEventUncheckedCreateInput): Promise<MedicalEvent> {
-  return db.medicalEvent.create({ data });
+  const event = await db.medicalEvent.create({ data });
+  await indexEvent(event).catch(console.error);
+  return event;
 }
 
 export async function updateEvent(id: string, data: Prisma.MedicalEventUpdateInput): Promise<MedicalEvent> {
   const existing = await db.medicalEvent.findUnique({ where: { id } });
   if (!existing) throw new Error("Event not found");
 
-  return db.medicalEvent.update({
+  const updated = await db.medicalEvent.update({
     where: { id },
     data
   });
+  await indexEvent(updated).catch(console.error);
+  return updated;
 }
 
 export async function deleteEvent(id: string): Promise<void> {
   await db.medicalEvent.delete({ where: { id } });
+  await removeFromIndex('event', id).catch(console.error);
 }
 
 export async function getEventsByMember(memberId: string): Promise<EventWithMember[]> {

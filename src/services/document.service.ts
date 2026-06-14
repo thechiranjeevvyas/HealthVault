@@ -2,6 +2,8 @@ import { db } from "@/lib/db";
 import { Document } from "@prisma/client";
 import { validateFile, saveFile, deleteFile, ALLOWED_TYPES } from "@/lib/storage";
 import { DocumentWithEvent } from "@/types";
+import { isOcrSupported, extractTextFromImage } from "./ocr.service";
+import { indexDocument, removeFromIndex } from "./search-index.service";
 
 export async function uploadDocument(params: {
   file: Buffer;
@@ -24,7 +26,7 @@ export async function uploadDocument(params: {
 
   const fileType = ALLOWED_TYPES[params.mimeType];
 
-  return db.document.create({
+  const document = await db.document.create({
     data: {
       fileName,
       filePath,
@@ -34,6 +36,33 @@ export async function uploadDocument(params: {
       eventId: params.eventId,
     }
   });
+
+  // Run OCR async for images
+  if (isOcrSupported(document.fileType)) {
+    // Run OCR (don't await — fire and forget to keep upload fast)
+    runOcrAndUpdate(document.id, document.filePath).catch(console.error);
+  } else {
+    // Index immediately if not running OCR
+    await indexDocument(document).catch(console.error);
+  }
+
+  return document;
+}
+
+export async function runOcrAndUpdate(documentId: string, filePath: string): Promise<void> {
+  try {
+    const ocrResult = await extractTextFromImage(filePath);
+    if (ocrResult.success && ocrResult.text.length > 0) {
+      const updated = await db.document.update({
+        where: { id: documentId },
+        data: { ocrText: ocrResult.text }
+      });
+      await indexDocument(updated).catch(console.error);
+      console.log(`OCR Complete for ${documentId}: ${ocrResult.words} words, ${Math.round(ocrResult.confidence)}% confidence.`);
+    }
+  } catch (error) {
+    console.error("OCR execution failed in background:", error);
+  }
 }
 
 export async function getDocumentsByMember(memberId: string): Promise<DocumentWithEvent[]> {
@@ -66,6 +95,7 @@ export async function deleteDocument(id: string): Promise<void> {
 
   await deleteFile(doc.filePath);
   await db.document.delete({ where: { id } });
+  await removeFromIndex('document', id).catch(console.error);
 }
 
 export async function getAllDocuments(memberId?: string): Promise<DocumentWithEvent[]> {

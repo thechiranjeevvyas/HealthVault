@@ -14,21 +14,24 @@ interface Props {
   showMember?: boolean;
   onEdit?: (event: EventWithMember) => void;
   onDelete?: (event: EventWithMember) => void;
+  timelineMode?: boolean;
 }
 
-export default function EventCard({ event, showMember = true, onEdit, onDelete }: Props) {
+export default function EventCard({ event, showMember = true, timelineMode = false, onEdit, onDelete }: Props) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const config = getEventTypeConfig(event.type);
 
   const borderColorClass = config.borderColor.replace("/20", "");
+  
+  const cardClasses = `bg-vault-surface border border-vault-border rounded-xl hover:shadow-md transition-shadow relative group overflow-hidden ${timelineMode ? 'p-4' : 'p-5'} ${timelineMode ? '' : `border-l-4 ${borderColorClass}`}`;
 
   return (
     <>
-      <div className={`bg-vault-surface border border-vault-border rounded-xl p-5 hover:shadow-md transition-shadow relative group overflow-hidden border-l-4 ${borderColorClass}`}>
+      <div className={cardClasses}>
         
         <div className="flex justify-between items-start mb-3">
           <EventTypeBadge type={event.type} size="sm" />
-          <div className="text-xs text-vault-muted font-medium">
+          <div className={`text-xs font-medium ${timelineMode ? "text-vault-text" : "text-vault-muted"}`}>
             {format(new Date(event.date), "MMM d, yyyy")}
           </div>
         </div>

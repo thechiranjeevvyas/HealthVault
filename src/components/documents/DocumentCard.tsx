@@ -45,9 +45,21 @@ export default function DocumentCard({ document, showEvent = true, onDelete }: P
         <div className="flex items-start gap-4 mb-4 pr-12">
           <FileTypeIcon fileType={document.fileType} size={40} />
           <div className="flex-1 min-w-0">
-            <h4 className="text-sm font-semibold text-vault-text truncate mb-1" title={document.fileName}>
-              {document.fileName}
-            </h4>
+            <div className="flex items-start gap-3 mb-2 w-full">
+              <div className="flex-1 truncate">
+                <h4 className="text-sm font-semibold text-vault-text truncate" title={document.fileName}>
+                  {document.fileName}
+                </h4>
+              </div>
+              {document.ocrText && (
+                <div 
+                  className="shrink-0 text-[10px] font-bold tracking-wider px-1.5 py-0.5 rounded bg-vault-success/10 text-vault-success border border-vault-success/20"
+                  title="Text extracted — searchable"
+                >
+                  OCR
+                </div>
+              )}
+            </div>
             <div className="text-xs text-vault-muted flex items-center gap-1.5">
               <span>{getFileSizeFormatted(document.fileSize)}</span>
               <span>&middot;</span>
@@ -84,11 +96,12 @@ export default function DocumentCard({ document, showEvent = true, onDelete }: P
       </div>
 
       <DocumentPreviewModal 
-        documentId={document.id} 
         open={previewOpen} 
-        onOpenChange={setPreviewOpen} 
+        onOpenChange={setPreviewOpen}
+        documentId={document.id}
         fileName={document.fileName}
         fileType={document.fileType}
+        ocrText={document.ocrText}
       />
 
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>

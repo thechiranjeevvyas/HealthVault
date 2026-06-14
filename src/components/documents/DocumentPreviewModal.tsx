@@ -5,6 +5,7 @@ import { Download, X, ZoomIn, ZoomOut } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import FileTypeIcon from "./FileTypeIcon";
+import { Copy, Check, Loader2 } from "lucide-react";
 
 interface Props {
   documentId: string | null;
@@ -12,13 +13,23 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   fileName?: string;
   fileType?: string;
+  ocrText?: string | null;
 }
 
-export default function DocumentPreviewModal({ documentId, open, onOpenChange, fileName = "Document", fileType = "OTHER" }: Props) {
+export default function DocumentPreviewModal({ documentId, open, onOpenChange, fileName = "Document", fileType = "OTHER", ocrText = null }: Props) {
   const [zoomed, setZoomed] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const fileUrl = documentId ? `/api/documents/${documentId}` : "";
+
+  const handleCopy = () => {
+    if (ocrText) {
+      navigator.clipboard.writeText(ocrText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   const handleDownload = async () => {
     if (!documentId) return;
@@ -118,6 +129,34 @@ export default function DocumentPreviewModal({ documentId, open, onOpenChange, f
             </div>
           )}
         </div>
+
+        {/* OCR TEXT SECTION */}
+        {["JPG", "PNG", "WEBP"].includes(fileType) && (
+          <div className="border-t border-vault-border bg-[#11131a] p-4 flex flex-col max-h-[250px]">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-xs font-bold text-vault-muted uppercase tracking-wider">Extracted Text</h4>
+              {ocrText && (
+                <Button variant="ghost" size="sm" className="h-7 text-xs px-2 text-vault-primary hover:bg-vault-primary/10" onClick={handleCopy}>
+                  {copied ? <Check className="w-3.5 h-3.5 mr-1" /> : <Copy className="w-3.5 h-3.5 mr-1" />}
+                  {copied ? "Copied!" : "Copy"}
+                </Button>
+              )}
+            </div>
+            
+            <div className="overflow-y-auto text-sm text-vault-text font-mono bg-vault-bg/30 p-3 rounded border border-vault-border/50 whitespace-pre-wrap">
+              {ocrText === null ? (
+                <div className="flex items-center gap-2 text-vault-muted py-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  OCR processing...
+                </div>
+              ) : ocrText === "" ? (
+                <div className="text-vault-muted italic py-2">No text detected in this image</div>
+              ) : (
+                ocrText
+              )}
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
